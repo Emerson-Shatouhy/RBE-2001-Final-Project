@@ -10,6 +10,7 @@
 #include <Arduino.h>
 #include <Romi32U4.h>
 #include <Chassis.h>
+#include <BlueMotor.h>
 void lineFollowDistance(int speed, float distance, float kp);
 void lineFollow(int speed, float kp);
 boolean lineFound();
@@ -17,6 +18,7 @@ boolean crossFound();
 boolean distanceFromObject(float distance);
 float getDistance();
 
+BlueMotor motor;
 Chassis chassis;
 int leftReflecentance = 21;
 int rightReflecentance = 22;
@@ -27,6 +29,8 @@ void setup()
 {
   Serial.begin(9600);
   chassis.init();
+  motor.setup();
+  motor.reset();
   pinMode(trigger, OUTPUT);
   pinMode(echo, INPUT);
 }
