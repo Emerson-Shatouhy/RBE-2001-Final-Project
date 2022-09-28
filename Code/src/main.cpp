@@ -17,6 +17,7 @@ boolean lineFound();
 boolean crossFound();
 boolean distanceFromObject(float distance);
 float getDistance();
+void blueDriveTo(long target);
 
 BlueMotor motor;
 Chassis chassis;
@@ -37,29 +38,10 @@ void setup()
 
 void loop()
 {
-
+ motor.moveTo(0);
 }
 
-void drivePick(){
-   chassis.turnFor(-135, 100, true);
-   while(!lineFound())
-   {
-     chassis.setMotorEfforts(100, 100);
-   }
-   chassis.driveFor(5, 100, true);
-   while(!lineFound()){
-      chassis.setMotorEfforts(-100, 100);
-   }
-   lineFollowDistance(100, 5, 0.1);
-   delay(1000);
-   //Arm down and grab panel
-   lineFollowDistance(-100, 5, 0.1);
-    chassis.turnFor(135, 100, true);
-    while(!lineFound()){
-      chassis.setMotorEfforts(100, 100);
-    }
-    chassis.setMotorEfforts(0, 0);
-}
+
 
 boolean distanceFromObject(float distance){
   if(getDistance() <= distance){
