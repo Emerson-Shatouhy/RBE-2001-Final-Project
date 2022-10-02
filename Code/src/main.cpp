@@ -17,11 +17,13 @@
 
 void lineFollowDistance(int speed, float distance, float kp);
 void lineFollow(int speed, float kp);
+void liftArm(int pos);
 boolean lineFound();
 boolean crossFound();
 boolean distanceFromObject(float distance);
 boolean servoOpenMax();
 boolean zeroArm();
+void placePiece(int pos);
 float getDistance();
 void blueDriveTo(long target);
 void safeCloseServo(int robot);
@@ -54,20 +56,82 @@ void setup()
 }
 
 
-void goTo(int pos){
-
-}
 void loop()
 {
-// motor.moveTo(-100);
-//goTo(-100);
-motor.moveTo(1000);
-delay(1000);
-motor.moveTo(0);
-delay(2000);
+  if(Serial){
+  delay(100); 
+  
   }
+}
 
+//45 degree = 4500
 
+void placePiece(int pos){
+  switch(pos){
+    case 0:
+    motor.moveTo(498);
+delay(5000);
+servo.writeMicroseconds(1500);
+delay(5000);
+motor.moveTo(350);
+delay(5000);
+chassis.setMotorEfforts(-100, -100);
+delay(5000);
+chassis.setMotorEfforts(0, 0);
+break;
+    case 1:
+    safeCloseServo(1);
+    motor.moveTo(4300);
+    servo.writeMicroseconds(1500);
+     delay(1000);
+    chassis.setMotorEfforts(-100, -100);
+    delay(1000);
+    chassis.setMotorEfforts(0, 0);
+    break;
+    case 2:
+        safeCloseServo(1);
+motor.moveTo(5751);
+servo.writeMicroseconds(1500);
+delay(1000);
+chassis.setMotorEfforts(-100, -100);
+delay(1000);
+chassis.setMotorEfforts(0, 0);
+break;
+  }
+}
+
+void pickPiece(int pos){
+  switch(pos){
+        case 0: 
+    safeCloseServo(1);
+    motor.moveTo(4000);
+    break;
+    case 1:
+    servo.writeMicroseconds(1500);
+    motor.moveTo(3853);
+    delay(2000);
+    safeCloseServo(1);
+    motor.moveTo(4500);
+    delay(2000);
+    chassis.setMotorEfforts(-100, -100);
+    delay(1000);
+    chassis.setMotorEfforts(0, 0);
+    delay(1000);
+    break;
+    case 2:
+    servo.writeMicroseconds(1600);
+motor.moveTo(5791);
+delay(1000);
+safeCloseServo(1);
+delay(1000);
+motor.moveTo(5285);
+safeCloseServo(1);
+chassis.setMotorEfforts(-100, -100);
+delay(1000);
+chassis.setMotorEfforts(0, 0);
+break;
+  }
+}
 boolean zeroArm(){
     motor.setEffort(200);
     long oldPos = 0;
@@ -77,7 +141,7 @@ boolean zeroArm(){
         delay(250);
     }
     motor.setEffort(-400);
-    delay(400);
+    delay(50);
     motor.setEffort(0);
     delay(100);
     motor.reset();
@@ -88,36 +152,31 @@ boolean zeroArm(){
 //147 is open
 
 void safeCloseServo(int robot){
-  Serial.println("RUN safe close");
   switch(robot){
     case 1:
-      servo.writeMicroseconds(750);
+      servo.writeMicroseconds(790);
       delay(350);
-      Serial.println(analogRead(A0));
-      if(analogRead(A0) > 150){
+      if(analogRead(A0) > 170){
       servo.writeMicroseconds(1600);
-      Serial.print("FAIL");
       }
       break;
     case 2:
     int last = 0;
     int current = analogRead(A0);
-    Serial.println(current);
-    Serial.println(last);
-    //Serial.println(abs(last-current));
-    while(current < 800){
-      servo.writeMicroseconds(1750);
-     if(abs(last - current) < 10){
-      servo.writeMicroseconds(1250);
-      delay(2000);
-      servo.writeMicroseconds(1500);
-    } else {
-      delay(2000);
-      last = current;
-      current = analogRead(A0);
+    servo.writeMicroseconds(1750);
+    while(current < 905){
+      Serial.println(current);
+      if((current - last)/2 < 2){
+        Serial.println((current-last)/2);
+        servo.writeMicroseconds(1500);
+        Serial.println("FAIL");
+        break;
+      } else {
+        last = current;
+        current = analogRead(A0);
+      }
+
     }
-    }
-    servo.writeMicroseconds(1500);
   }
   
 }
