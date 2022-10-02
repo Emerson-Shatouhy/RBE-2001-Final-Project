@@ -90,13 +90,26 @@ void BlueMotor::setEffort(int effort, bool clockwise)
     OCR1C = constrain(effort, 0, 400);
 }
 
-void BlueMotor::moveTo(long distance)  //Move to this encoder position within the specified
+void BlueMotor::setEffortNoDeadband(int effort){
+  if(effort == 0){
+    setEffort(0);
+  } else if(effort < 0){
+    setEffort(-effort + 145);
+  } else {
+    setEffort(effort + 130);
+  }
+}
+
+void BlueMotor::moveTo(long pos)  //Move to this encoder position within the specified
 {                                    //tolerance in the header file using proportional control
-float kp = 0.1;
-float error = getPosition() + distance;
-while(getPosition() != distance){
-  error = distance-getPosition();
-  setEffort(kp*error*100);
+  if(pos < 0){
+    return;
+  }
+  float kp = 1.5;
+  float error = (pos - getPosition() ) * kp;
+  while(abs(error) > 10){  
+  setEffort(-1*error*4);
+  error = (pos - getPosition())*kp ;
 }
 setEffort(0);
 }

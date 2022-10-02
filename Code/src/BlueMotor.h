@@ -5,6 +5,7 @@ class BlueMotor
 public:
     BlueMotor();
     void setEffort(int effort);
+    void setEffortNoDeadband(int effort);
     void moveTo(long position);
     long getPosition();
     void reset();
