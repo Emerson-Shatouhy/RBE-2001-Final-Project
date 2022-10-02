@@ -91,12 +91,13 @@ void BlueMotor::setEffort(int effort, bool clockwise)
 }
 
 void BlueMotor::setEffortNoDeadband(int effort){
+  effort *= .625;
   if(effort == 0){
     setEffort(0);
   } else if(effort < 0){
-    setEffort(-effort + 145);
+    setEffort(effort - 150);
   } else {
-    setEffort(effort + 130);
+    setEffort(effort + 140);
   }
 }
 
@@ -107,8 +108,11 @@ void BlueMotor::moveTo(long pos)  //Move to this encoder position within the spe
   }
   float kp = 1.5;
   float error = (pos - getPosition() ) * kp;
-  while(abs(error) > 10){  
+  while(abs(error) > 10){ 
+    if(error < 400) 
   setEffort(-1*error*4);
+  else 
+  setEffort(-400 * kp);
   error = (pos - getPosition())*kp ;
 }
 setEffort(0);
