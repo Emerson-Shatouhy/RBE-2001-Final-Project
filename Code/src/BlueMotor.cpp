@@ -101,14 +101,14 @@ void BlueMotor::setEffortNoDeadband(int effort){
   }
 }
 
-void BlueMotor::moveTo(long pos)  //Move to this encoder position within the specified
-{                                    //tolerance in the header file using proportional control
+void BlueMotor::moveTo(long pos, boolean (*function)())  //Move to this encoder position within the specified
+{                               //tolerance in the header file using proportional control
   if(pos < 0){
     return;
   }
-  float kp = 1.5;
+  float kp = 2;
   float error = (pos - getPosition() ) * kp;
-  while(abs(error) > 10){ 
+  while(abs(error) > 10 && !(*function)()){ 
     if(error < 400) 
   setEffort(-1*error*4);
   else 
@@ -117,4 +117,3 @@ void BlueMotor::moveTo(long pos)  //Move to this encoder position within the spe
 }
 setEffort(0);
 }
-

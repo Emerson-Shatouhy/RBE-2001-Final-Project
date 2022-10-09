@@ -6,7 +6,7 @@ public:
     BlueMotor();
     void setEffort(int effort);
     void setEffortNoDeadband(int effort);
-    void moveTo(long position);
+    void moveTo(long position, boolean (*)());
     long getPosition();
     void reset();
     void setup();   
