@@ -50,9 +50,9 @@ enum stateChoices
   PICKUP45,
   PLACE25,
   PICKUP25,
-  RETURNHOME,
   STOP,
-  TEST
+  CROSSL,
+  CROSSR
 } romiState,
     nextRomiState;
 boolean romiWaiting = false;
@@ -91,6 +91,11 @@ void loop()
     stopRobot();
     break;
   case PLACE45:
+  motor.moveTo(0, remoteCheck);
+  while(!crossFound(remoteCheck)){
+    lineFollow(75, 0.1);
+  } 
+chassis.setMotorEfforts(0,0);
     pickPiece(0);
     chassis.driveFor(-6, 100, true, remoteCheck);
     chassis.turnFor(-90, 100, true, remoteCheck);
@@ -108,7 +113,7 @@ void loop()
     {
       chassis.setMotorEfforts(50, -50);
     }
-    while (!distanceFromObject(10.5, remoteCheck))
+    while (!distanceFromObject(11.25, remoteCheck))
     {
       lineFollow(100, 0.1);
     }
@@ -120,37 +125,37 @@ void loop()
   case PICKUP45:
     motor.moveTo(3553, remoteCheck);
     servo.writeMicroseconds(1500);
-    while (!distanceFromObject(15, remoteCheck))
+    while (!distanceFromObject(12, remoteCheck))
     {
       lineFollow(100, 0.1);
     }
     chassis.setMotorEfforts(0, 0);
     pickPiece(1);
-    while (getDistance() < 17)
+    while (getDistance() < 25)
     {
-      chassis.setMotorEfforts(-50, -50);
+      chassis.setMotorEfforts(-75, -75);
     }
     chassis.setMotorEfforts(0, 0);
-    chassis.turnFor(-90, 50, true, remoteCheck);
+    chassis.turnFor(-90, 75, true, remoteCheck);
     while (!lineFound(remoteCheck))
     {
       chassis.setMotorEfforts(50, -50);
     }
     while (!crossFound(remoteCheck))
     {
-      lineFollow(50, 0.1);
+      lineFollow(75, 0.1);
     }
     chassis.driveFor(7.5, 50, true, remoteCheck);
-    chassis.turnFor(45, 40, true, remoteCheck);
+    chassis.turnFor(45, 50, true, remoteCheck);
     while (!lineFound(remoteCheck))
     {
       chassis.setMotorEfforts(-50, 50);
     }
-    while (!distanceFromObject(9, remoteCheck))
+    while (!crossFound(remoteCheck))
     {
       lineFollow(50, 0.1);
     }
-    chassis.setMotorEfforts(0, 0);
+    chassis.driveFor(-2.5, 50, true, remoteCheck);
     placePiece(0);
     romiState = STOP;
     break;
@@ -172,9 +177,9 @@ void loop()
     {
       chassis.setMotorEfforts(-50, 50);
     }
-    while (!distanceFromObject(10, remoteCheck))
+    while (!distanceFromObject(9.5, remoteCheck))
     {
-      lineFollow(100, 0.1);
+      lineFollow(50, 0.1);
     }
     chassis.setMotorEfforts(0, 0);
     placePiece(2);
@@ -184,7 +189,7 @@ void loop()
   case PICKUP25:
     motor.moveTo(5100, remoteCheck);
     servo.writeMicroseconds(1500);
-    while (!distanceFromObject(12, remoteCheck))
+    while (!distanceFromObject(12.5, remoteCheck))
     {
       lineFollow(100, 0.1);
     }
@@ -192,7 +197,7 @@ void loop()
     pickPiece(1);
     while (getDistance() < 20)
     {
-      chassis.setMotorEfforts(-50, -50);
+      chassis.setMotorEfforts(-75, -75);
     }
     chassis.setMotorEfforts(0, 0);
     chassis.turnFor(-90, 50, true, remoteCheck);
@@ -202,7 +207,7 @@ void loop()
     }
     while (!crossFound(remoteCheck))
     {
-      lineFollow(50, 0.1);
+      lineFollow(75, 0.1);
     }
     chassis.driveFor(7.5, 40, true, remoteCheck);
     chassis.turnFor(-45, 40, true, remoteCheck);
@@ -210,19 +215,98 @@ void loop()
     {
       chassis.setMotorEfforts(50, -50);
     }
-    while (!distanceFromObject(10, remoteCheck))
+    while (!crossFound(remoteCheck))
     {
-      lineFollow(50, 0.1);
+      lineFollow(75, 0.1);
     }
-    chassis.setMotorEfforts(0, 0);
+    chassis.driveFor(-2.5, 50, true, remoteCheck);
     placePiece(0);
     romiState = STOP;
     break;
 
-    case TEST:
-    Serial.print(analogRead(leftReflecentance));
-    Serial.print("                    ");
-    Serial.println(analogRead(rightReflecentance));
+    case CROSSL:
+    chassis.turnFor(-90, 75, true, remoteCheck);
+    while (!lineFound(remoteCheck))
+    {
+      chassis.setMotorEfforts(50, -50);
+    }
+    while (!crossFound(remoteCheck))
+    {
+      lineFollow(75, 0.1);
+    }
+    chassis.driveFor(7.5, 50, true, remoteCheck);
+    chassis.turnFor(50, 50, true, remoteCheck);
+    while (!lineFound(remoteCheck))
+    {
+      chassis.setMotorEfforts(-75, 75);
+    }
+    while (!crossFound(remoteCheck))
+    {
+      lineFollow(50, 0.1);
+    }
+    chassis.driveFor(-5, 100, true, remoteCheck);
+     motor.moveTo(5400, remoteCheck);
+    chassis.turnFor(85, 100, true, remoteCheck);
+    while (!lineFound(remoteCheck))
+    {
+      chassis.setMotorEfforts(100, 100);
+    }
+    chassis.driveFor(7.5, 100, true, remoteCheck);
+    chassis.turnFor(45, 100, true, remoteCheck);
+    while (!lineFound(remoteCheck))
+    {
+      chassis.setMotorEfforts(-100, 100);
+    }
+    while(!crossFound(remoteCheck))
+    {
+      lineFollow(100, 0.1);
+    }
+
+    chassis.driveFor(-7.5, 100, true, remoteCheck);
+    motor.moveTo(1000, remoteCheck);
+    romiState = STOP;
+ break;
+ case CROSSR:
+    chassis.turnFor(-90, 75, true, remoteCheck);
+    while (!lineFound(remoteCheck))
+    {
+      chassis.setMotorEfforts(50, -50);
+    }
+    while (!crossFound(remoteCheck))
+    {
+      lineFollow(75, 0.1);
+    }
+    chassis.driveFor(7.5, 50, true, remoteCheck);
+    chassis.turnFor(85, 50, true, remoteCheck);
+    while (!lineFound(remoteCheck))
+    {
+      chassis.setMotorEfforts(-50, 50);
+    }
+    while (!crossFound(remoteCheck))
+    {
+      lineFollow(50, 0.1);
+    }
+     motor.moveTo(5400, remoteCheck);
+    chassis.driveFor(-5, 100, true, remoteCheck);
+    chassis.turnFor(95, 100, true, remoteCheck);
+    while (!lineFound(remoteCheck))
+    {
+      chassis.setMotorEfforts(100, 100);
+    }
+    chassis.driveFor(7.5, 100, true, remoteCheck);
+    chassis.turnFor(45, 100, true, remoteCheck);
+    while (!lineFound(remoteCheck))
+    {
+      chassis.setMotorEfforts(-100, 100);
+    }
+    while(!crossFound(remoteCheck))
+    {
+      lineFollow(100, 0.1);
+    }
+
+    chassis.driveFor(-7.5, 100, true, remoteCheck);
+    motor.moveTo(1000, remoteCheck);
+    romiState = STOP;
  break;
 }
 }
@@ -259,10 +343,10 @@ void placePiece(int pos)
   switch (pos)
   {
   case 0:
-    motor.moveTo(498, remoteCheck);
+    motor.moveTo(300, remoteCheck);
     romiWaiting = true;
     servoConfirmOpen();
-    motor.moveTo(350, remoteCheck);
+    motor.moveTo(200, remoteCheck);
     chassis.driveFor(-10, 100, true, remoteCheck);
     break;
   case 1:
@@ -305,16 +389,15 @@ void pickPiece(int pos)
   case 0:
     romiWaiting = true;
     servoConfirmClose();
+    chassis.driveFor(-10, 100, true, remoteCheck);
     motor.moveTo(5400, remoteCheck);
     break;
   case 1:
     servo.writeMicroseconds(1500);
-    motor.moveTo(3553, remoteCheck);
+    motor.moveTo(4250, remoteCheck);
     romiWaiting = true;
     servoConfirmClose();
-    motor.moveTo(4500, remoteCheck);
-    chassis.setMotorEfforts(-100, -100);
-    chassis.setMotorEfforts(0, 0);
+    motor.moveTo(4700, remoteCheck);
     break;
   case 2:
     motor.moveTo(4700, remoteCheck);
@@ -585,7 +668,11 @@ void handleKeyPress(int keyPress)
   }
   if (keyPress == remote3)
   {
-    romiState = TEST;
+    romiState = CROSSL;
+  }
+  if (keyPress == remote9)
+  {
+    romiState = CROSSR;
   }
   if (keyPress == remoteUp)
   {

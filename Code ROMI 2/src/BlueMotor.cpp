@@ -106,13 +106,10 @@ void BlueMotor::moveTo(long pos, boolean (*function)())  //Move to this encoder 
   if(pos < 0){
     return;
   }
-  float kp = 2;
+  float kp = 5;
   float error = (pos - getPosition() ) * kp;
-  while(abs(error) > 10 && !(*function)()){ 
-    if(error < 400) 
-  setEffort(-1*error*4);
-  else 
-  setEffort(-400 * kp);
+  while(abs(error) > 60 && !(*function)()){ 
+  setEffort(-1*error);
   error = (pos - getPosition())*kp ;
 }
 setEffort(0);
