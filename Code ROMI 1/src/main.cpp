@@ -26,6 +26,10 @@ boolean lineFound(boolean (*function)());
 boolean crossFound(boolean (*function)());
 boolean distanceFromObject(float distance, boolean (*function)());
 boolean servoOpenMax();
+void openServo();
+void openServoTime(int time);
+void servoConfirmOpen();
+void servoConfirmClose();
 boolean zeroArm();
 void placePiece(int pos);
 float getDistance();
@@ -50,9 +54,12 @@ enum stateChoices
   PICKUP25,
   RETURNHOME,
   STOP,
-  TEST
+  TEST,
+  CROSSR,
+  CROSSL
 } romiState,
     nextRomiState;
+boolean romiWaiting = false;
 int echo = 17;
 int trigger = 12;
 float cmPerEncoderTick = (7 * 3.14) / 1440;
@@ -81,6 +88,8 @@ boolean remoteCheck()
 
 void loop()
 {
+
+  //motor.setEffort(-400);
   checkRemote();
   switch (romiState)
   {
@@ -89,7 +98,7 @@ void loop()
     break;
   case PLACE45:
     pickPiece(0);
-    chassis.driveFor(-6, 100, true, remoteCheck);
+    chassis.driveFor(-3, 25, true, remoteCheck);
     chassis.turnFor(-90, 100, true, remoteCheck);
     while (!lineFound(remoteCheck))
     {
@@ -105,26 +114,32 @@ void loop()
     {
       chassis.setMotorEfforts(50, -50);
     }
-    while (!distanceFromObject(10, remoteCheck))
+    while (!distanceFromObject(14, remoteCheck))
     {
       lineFollow(100, 0.1);
     }
     chassis.setMotorEfforts(0, 0);
     delay(1000);
     placePiece(1);
-    chassis.driveFor(-5, 50, true, remoteCheck);
+    
+    
+    chassis.driveFor(-2, 15, true, remoteCheck);
+    motor.moveTo(3400, remoteCheck);
+    chassis.driveFor(-12, 15, true, remoteCheck);
     romiState = STOP;
     break;
   case PICKUP45:
-    motor.moveTo(3553, remoteCheck);
-    servo.writeMicroseconds(1500);
-    while (!distanceFromObject(10, remoteCheck))
+    openServo();
+    motor.moveTo(2750, remoteCheck);
+    //servo.writeMicroseconds(1500);
+    
+    while (!distanceFromObject(15, remoteCheck))
     {
-      lineFollow(100, 0.1);
+      lineFollow(50, 0.1);
     }
     chassis.setMotorEfforts(0, 0);
     pickPiece(1);
-    while (getDistance() < 17)
+    while (getDistance() < 18)
     {
       chassis.setMotorEfforts(-50, -50);
     }
@@ -144,7 +159,7 @@ void loop()
     {
       chassis.setMotorEfforts(-50, 50);
     }
-    while (!distanceFromObject(9, remoteCheck))
+    while (!distanceFromObject(12.5, remoteCheck))
     {
       lineFollow(50, 0.1);
     }
@@ -154,7 +169,7 @@ void loop()
     break;
   case PLACE25:
     pickPiece(0);
-    chassis.driveFor(-6, 100, true, remoteCheck);
+    chassis.driveFor(-3, 25, true, remoteCheck);
     chassis.turnFor(-90, 100, true, remoteCheck);
     while (!lineFound(remoteCheck))
     {
@@ -164,30 +179,37 @@ void loop()
     {
       lineFollow(100, 0.1);
     }
-    chassis.driveFor(7.5, 50, true, remoteCheck);
+    chassis.driveFor(7.5, 30, true, remoteCheck);
     chassis.turnFor(45, 50, true, remoteCheck);
     while (!lineFound(remoteCheck))
     {
       chassis.setMotorEfforts(-50, 50);
     }
-    while (!distanceFromObject(10, remoteCheck))
-    {
-      lineFollow(100, 0.1);
-    }
-    chassis.setMotorEfforts(0, 0);
-    placePiece(2);
-    chassis.driveFor(-5, 420, true, remoteCheck);
-    romiState = STOP;
-    break;
-  case PICKUP25:
-    motor.moveTo(5100, remoteCheck);
-    servo.writeMicroseconds(1500);
     while (!distanceFromObject(12, remoteCheck))
     {
       lineFollow(100, 0.1);
     }
     chassis.setMotorEfforts(0, 0);
-    pickPiece(1);
+    delay(1000);
+    placePiece(2);
+    //Serial.println("Placed");
+    chassis.driveFor(-10, 15, true, remoteCheck);
+    
+    romiState = STOP;
+    break;
+  case PICKUP25:
+    openServo();
+    openServoTime(5000);
+    //openServoTime(2000);
+    motor.moveTo(5100, remoteCheck);
+    Serial.println("At Position");
+    //servo.writeMicroseconds(1500);
+    while (!distanceFromObject(12, remoteCheck))
+    {
+      lineFollow(50, 0.1);
+    }
+    chassis.setMotorEfforts(0, 0);
+    pickPiece(2);
     while (getDistance() < 20)
     {
       chassis.setMotorEfforts(-50, -50);
@@ -208,7 +230,7 @@ void loop()
     {
       chassis.setMotorEfforts(50, -50);
     }
-    while (!distanceFromObject(10, remoteCheck))
+    while (!distanceFromObject(12.5, remoteCheck))
     {
       lineFollow(50, 0.1);
     }
@@ -218,12 +240,30 @@ void loop()
     break;
 
     case TEST:
-    pickPiece(1);
+    //pickPiece(1);
+    //safeCloseServo(2);
+    //delay(1000);
+    openServo();
+    //Serial.println(getDistance());
     romiState = STOP;
     break;
   }
 }
 
+void servoConfirmOpen()
+{
+  while(romiWaiting){
+    checkRemote();
+  }
+  //servo.writeMicroseconds(1500);
+}
+
+void servoConfirmClose(){
+  while(romiWaiting){
+    checkRemote();
+  }
+  safeCloseServo(2);
+}
 
 
 
@@ -256,20 +296,32 @@ void placePiece(int pos)
   switch (pos)
   {
   case 0:
-    motor.moveTo(498, remoteCheck);
-    servo.writeMicroseconds(1500);
-    motor.moveTo(350, remoteCheck);
-    chassis.driveFor(-10, 100, true, remoteCheck);
+    motor.moveTo(15, remoteCheck);
+    //servo.writeMicroseconds(1500);
+    romiWaiting=true;
+    servoConfirmOpen();
+    openServoTime(4000);
+    //motor.moveTo(350, remoteCheck);
+    chassis.driveFor(-10, 20, true, remoteCheck);
     break;
   case 1:
-    motor.moveTo(4000, remoteCheck);
-    servo.writeMicroseconds(1500);
-    chassis.driveFor(-10, 100, true, remoteCheck);
+    motor.moveTo(3600, remoteCheck);
+    //servo.writeMicroseconds(1500);
+    //openServo();
+    romiWaiting=true;
+    servoConfirmOpen();
+    openServoTime(5000);
+    //chassis.driveFor(-10, 100, true, remoteCheck);
     break;
   case 2:
-    motor.moveTo(5751, remoteCheck);
-    servo.writeMicroseconds(1500);
-    chassis.setMotorEfforts(-100, -100);
+    motor.moveTo(5600, remoteCheck);
+    //servo.writeMicroseconds(1500);
+    //delay(100);
+    romiWaiting=true;
+    servoConfirmOpen();
+    openServoTime(5000);
+    //delay(100);
+    //chassis.setMotorEfforts(-100, -100);
     chassis.setMotorEfforts(0, 0);
     break;
   case 3:
@@ -297,21 +349,43 @@ void pickPiece(int pos)
   switch (pos)
   {
   case 0:
-    safeCloseServo(1);
-    motor.moveTo(5400, remoteCheck);
+  /*motor.moveTo(3000, remoteCheck);
+  openServoTime(2000);
+  while (!crossFound(remoteCheck))
+    {
+      lineFollow(50, 0.1);
+    }
+    chassis.driveFor(-5,15,true,remoteCheck);
+    motor.moveTo(20,remoteCheck);
+    chassis.driveFor(2,20,true,remoteCheck);*/
+    openServoTime(2000);
+    while (!distanceFromObject(17, remoteCheck))
+    {
+      lineFollow(50, 0.1);
+    }
+    chassis.driveFor(6.25,20,true,remoteCheck);
+    chassis.setMotorEfforts(0, 0);
+    //grabs
+    romiWaiting=true;
+    servoConfirmClose();
+    
+    chassis.driveFor(-5,20,true,remoteCheck);
+    motor.moveTo(5100, remoteCheck);
     break;
   case 1:
-    servo.writeMicroseconds(1500);
-    motor.moveTo(3553, remoteCheck);
-    safeCloseServo(1);
-    motor.moveTo(4500, remoteCheck);
-    chassis.setMotorEfforts(-100, -100);
+    //servo.writeMicroseconds(1500);
+    motor.moveTo(3000, remoteCheck);
+    romiWaiting=true;
+    servoConfirmClose();
+    motor.moveTo(3300, remoteCheck);
+    //chassis.setMotorEfforts(-100, -100);
     chassis.setMotorEfforts(0, 0);
     break;
   case 2:
-    motor.moveTo(4700, remoteCheck);
-    safeCloseServo(1);
     motor.moveTo(5100, remoteCheck);
+    romiWaiting=true;
+    servoConfirmClose();
+    motor.moveTo(4800, remoteCheck);
     break;
   case 3:
     break;
@@ -325,6 +399,7 @@ void pickPiece(int pos)
  */
 boolean zeroArm()
 {
+  Serial.println("Zeroing");
   motor.setEffort(200);
   long oldPos = 0;
   delay(500);
@@ -334,13 +409,37 @@ boolean zeroArm()
     delay(250);
   }
   motor.setEffort(-400);
-  delay(100);
+  delay(485);
   motor.setEffort(0);
   motor.reset();
-  servo.writeMicroseconds(1600);
+  //motor.moveTo(-200, remoteCheck);
+  //servo.writeMicroseconds(1600);
+  openServo();
   return true;
 }
-
+void openServo(){
+  Serial.println("Opening Claw");
+  
+  int clawPos = analogRead(A0);
+  Serial.println(clawPos);
+  servo.writeMicroseconds(1000);
+  while(clawPos> 700 && !remoteCheck()){
+      delay(100);
+      Serial.println(analogRead(A0));
+      clawPos = analogRead(A0);
+    }
+    servo.writeMicroseconds(1500);
+}
+void openServoTime(int time){
+  //int time = 5000;
+  servo.writeMicroseconds(1000);
+  while (time>0 && !remoteCheck()){
+    delay(20);
+    time-=20;
+  }
+  servo.writeMicroseconds(1500);
+  
+}
 /**
  * @brief Closes servo safely
  *
@@ -360,23 +459,66 @@ void safeCloseServo(int robot)
     }
     break;
   case 2:
-    int last = 0;
-    int current = analogRead(A0);
-    servo.writeMicroseconds(1750);
-    while (current < 905)
-    {
-
-      if ((current - last) / 2 < 2)
-      {
-        servo.writeMicroseconds(1500);
-        break;
-      }
-      else
-      {
-        last = current;
-        current = analogRead(A0);
-      }
+    //while(!Serial){
+    //  delay(500);
+    //}
+    //Serial.println("Entered Case 2");
+    //servo.writeMicroseconds(1000);
+    //delay(1000);
+    //Serial.println("Case 2 staring");
+    while(!(analogRead(A0)> 985 && analogRead(A0)< 1200) && !remoteCheck()){
+      servo.writeMicroseconds(2000);
+      Serial.println(analogRead(A0));
     }
+    servo.writeMicroseconds(1500);
+    //delay(1000);
+    //servo.writeMicroseconds(1000);
+    //delay(1000);
+    //servo.writeMicroseconds(1500);
+    //Serial.println("Done");
+  /*
+    Serial.println("opening");
+      servo.writeMicroseconds(2000);
+      int previous = analogRead(A0);
+
+      int current = analogRead(A0);
+      unsigned long startTime = millis();
+      while(1){
+        float avgChange;
+        int change;
+        for (int i = 0; i < 10; i++){
+              current = analogRead(A0);
+              delay(100);
+              change = current - previous;
+              avgChange += abs(change);
+              previous = current;
+              delay(100);
+              Serial.print("   Current:: ");
+              Serial.print(current);
+              Serial.print("   Previous:: ");
+              Serial.print(previous);
+              Serial.print("   Change:: ");
+              Serial.println(change);
+          }
+          avgChange = avgChange/10;
+          Serial.print("   Avg Change:: ");
+          Serial.println(avgChange);
+          if(abs(avgChange) <4){
+            //If stalled but at the correct position, just stop
+            if(analogRead(A0)> 850 && analogRead(A0)< 975){
+              servo.writeMicroseconds(1500);
+            }
+
+              Serial.println("Stalled");
+              //Unspin after stalled to release plate
+              servo.writeMicroseconds(1000);
+              delay(5000);
+              //Stop driving
+              servo.writeMicroseconds(1500);
+              exit(1);
+          }
+          delay(200);      
+      }*/
   }
 }
 /**
@@ -478,7 +620,7 @@ boolean lineFound(boolean (*function)())
     return true;
   }
   float right = analogRead(leftReflecentance);
-  if (right > 300 || !(*function)())
+  if (right > 500)
   {
     return true;
   }
@@ -502,7 +644,7 @@ boolean crossFound(boolean (*function)())
   }
   float right = analogRead(rightReflecentance);
   float left = analogRead(leftReflecentance);
-  if (left > 600 && right > 600 || !(*function)())
+  if (left > 600 && right > 600)
   {
     return true;
   }
@@ -512,9 +654,11 @@ boolean crossFound(boolean (*function)())
   }
 }
 
+
 /**
- * @brief Checks remote for button press
+ * @brief Handles IR Remote Inputs
  *
+ * @param keyPress
  */
 void checkRemote()
 {
@@ -530,7 +674,6 @@ void checkRemote()
  */
 void handleKeyPress(int keyPress)
 {
-  Serial.println(keyPress);
   if (keyPress == remotePlayPause) // Pause / Resume
   {
     if(romiState != STOP){
@@ -562,6 +705,14 @@ void handleKeyPress(int keyPress)
   }
   if (keyPress == remote3)
   {
-    romiState = TEST;
+    romiState = CROSSL;
+  }
+  if (keyPress == remote9)
+  {
+    romiState = CROSSR;
+  }
+  if (keyPress == remoteUp)
+  {
+    romiWaiting = false;
   }
 }
